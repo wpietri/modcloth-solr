@@ -41,7 +41,7 @@ end
 package_file = "#{Chef::Config[:file_cache_path]}/apache-solr-3.6.0.tgz"
 
 execute "extract solr tar file into tmp" do
-  command "cd #{Chef::Config[:file_cache_path]} && tar -xfz #{package_file}"
+  command "cd #{Chef::Config[:file_cache_path]} && tar -xvf #{package_file}"
   not_if { File.directory?("#{Chef::Config[:file_cache_path]}/apache-solr-#{node.solr.version}") }
 end
 
