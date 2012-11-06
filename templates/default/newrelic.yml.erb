@@ -212,7 +212,7 @@ common: &default_settings
 
 production:
   <<: *default_settings
-  app_name: "[prod] <%= @newrelic[:app_name] %> [Solr]"
+  app_name: "[production] <%= @newrelic[:app_name] %> [Solr]"
 
 stage:
   <<: *default_settings
