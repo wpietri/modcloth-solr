@@ -96,3 +96,10 @@ end
 service "solr-replica" do
   action :enable
 end
+
+template "/opt/solr-3.6.0/replica/etc/jetty.xml" do 
+  source "jetty.xml.erb"
+  owner user
+  mode "0755"
+end 
+

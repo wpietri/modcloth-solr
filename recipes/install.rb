@@ -82,9 +82,4 @@ directory "/var/log/solr" do
   not_if { File.directory?("/var/log/solr") }
 end
 
-template "/opt/solr-3.6.0/replica/etc/jetty.xml" do 
-  source "jetty.xml.erb"
-  owner user
-  mode "0755"
-end 
 
