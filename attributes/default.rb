@@ -1,4 +1,4 @@
-default.rails_env = 'demo'
+default.application.environment = 'demo'
 
 default.solr.version = '3.6.0'
 default.solr.java_dir = '/usr/java/default'

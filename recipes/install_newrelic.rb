@@ -20,6 +20,6 @@ else
     source "newrelic.yml.erb"
     owner user
     mode 0644
-    variables(:newrelic => node.solr.newrelic, :rails_env => node.rails_env)
+    variables(:newrelic => node.solr.newrelic)
   end
 end

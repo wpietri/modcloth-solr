@@ -26,19 +26,19 @@ package_sha1_checksum = {
 }.fetch(node.solr.version)
 
 
-remote_file "#{Chef::Config[:file_cache_path]}/apache-solr-3.6.0.tgz" do
-	source "http://tarballs.modcloth.s3.amazonaws.com/apache-solr-3.6.0.tgz"
+remote_file "#{Chef::Config[:file_cache_path]}/apache-solr-#{node.solr.version}.tgz" do
+	source "http://tarballs.modcloth.s3.amazonaws.com/apache-solr-#{node.solr.version}.tgz"
 	mode "0744"
 	# checksum package_sha1_checksum XXX this does not appear to work.  perhaps it's trieuvan.com's fault?
-	not_if { File.directory?("#{Chef::Config[:file_cache_path]}/apache-solr-3.6.0") }
+	not_if { File.directory?("#{Chef::Config[:file_cache_path]}/apache-solr-#{node.solr.version}") }
 end
 
 execute "checksum solr tar file" do
-	command %Q([[ "$(openssl sha1 #{Chef::Config[:file_cache_path]}/apache-solr-3.6.0.tgz)" =~ "#{package_sha1_checksum}" ]])
-	not_if { File.directory?("#{Chef::Config[:file_cache_path]}/apache-solr-3.6.0") }
+	command %Q([[ "$(openssl sha1 #{Chef::Config[:file_cache_path]}/apache-solr-#{node.solr.version}.tgz)" =~ "#{package_sha1_checksum}" ]])
+	not_if { File.directory?("#{Chef::Config[:file_cache_path]}/apache-solr-#{node.solr.version}") }
 end
 
-package_file = "#{Chef::Config[:file_cache_path]}/apache-solr-3.6.0.tgz"
+package_file = "#{Chef::Config[:file_cache_path]}/apache-solr-#{node.solr.version}.tgz"
 
 execute "extract solr tar file into tmp" do
   command "cd #{Chef::Config[:file_cache_path]} && tar -xvf #{package_file}"

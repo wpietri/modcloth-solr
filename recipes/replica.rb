@@ -69,7 +69,7 @@ smf "solr-replica" do
 
   # Add NewRelic to start command if an API key is present
   cmd << "-javaagent:#{node.solr.newrelic.jar}" unless node.solr.newrelic.api_key.to_s.empty?
-  cmd << "-Dnewrelic.environment=#{node.rails_env}" unless node.solr.newrelic.api_key.to_s.empty?
+  cmd << "-Dnewrelic.environment=#{node.application.environment}" unless node.solr.newrelic.api_key.to_s.empty?
 
   cmd << "-jar start.jar &"
   start_command cmd.join(' ')
@@ -97,7 +97,7 @@ service "solr-replica" do
   action :enable
 end
 
-template "/opt/solr-3.6.0/replica/etc/jetty.xml" do 
+template "/opt/solr-#{node.solr.version}/replica/etc/jetty.xml" do
   source "jetty.xml.erb"
   owner user
   mode "0755"
