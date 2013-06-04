@@ -27,7 +27,7 @@ package_sha1_checksum = {
 
 
 remote_file "#{Chef::Config[:file_cache_path]}/apache-solr-3.6.0.tgz" do
-	source "http://tarballs.modcloth.s3.amazonaws.com/apache-solr-3.6.0.tgz"
+	source "http://www.trieuvan.com/apache/lucene/solr/3.6.0/apache-solr-3.6.0.tgz"
 	mode "0744"
 	# checksum package_sha1_checksum XXX this does not appear to work.  perhaps it's trieuvan.com's fault?
 	not_if { File.directory?("#{Chef::Config[:file_cache_path]}/apache-solr-3.6.0") }
