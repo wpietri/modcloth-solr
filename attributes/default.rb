@@ -15,7 +15,7 @@ default.solr.auto_commit = {
   :max_time => nil
 }
 
-default.solr.users = ['ecomm']
+default.solr.users = []
 default.solr.master.hostname = 'localhost'
 default.solr.master.port = 9985
 default.solr.master.home = '/opt/solr/master'
