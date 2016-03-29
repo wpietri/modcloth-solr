@@ -1,8 +1,8 @@
 #
-# Cookbook Name:: solr
+# Cookbook Name:: modcloth-solr
 # Recipe:: user
 #
-# Copyright 2010, ModCloth, Inc.
+# Copyright 2010-2016, ModCloth, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-username = "solr"
+username = 'solr'
 
-user "solr" do
-  comment "solr"
-  home "/opt/solr"
-  shell "/bin/bash"
+user 'solr' do
+  comment 'solr'
+  home '/opt/solr'
+  shell '/bin/bash'
   supports :manage_home => false
 end

@@ -1,0 +1,8 @@
+AllCops:
+  Exclude:
+    - 'Vagrantfile'
+    - 'Thorfile'
+    - 'Gemfile'
+    - 'Berksfile'
+Metrics/LineLength:
+  Max: 200

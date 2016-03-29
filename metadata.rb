@@ -1,3 +1,4 @@
+name             "modcloth-solr"
 maintainer       "ModCloth, Inc."
 maintainer_email "ops@modcloth.com"
 license          "Apache 2.0"

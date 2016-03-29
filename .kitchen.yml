@@ -1,0 +1,23 @@
+---
+driver:
+  name: vagrant
+
+driver_config:
+  require_chef_omnibus: false
+
+provisioner:
+  name: chef_zero
+
+platforms:
+  - name: smartos-13.4.0
+    driver:
+      gui: true
+    driver_config:
+      box: livinginthepast/smartos-base64-13.4.0
+      vagrantfile_erb: test/templates/Vagrantfile.smartos.erb
+      provision: true
+
+suites:
+  - name: default
+    run_list:
+    attributes:
