@@ -28,3 +28,5 @@ default.solr.newrelic.api_key = ''
 default.solr.newrelic.apdex_t = '0.02'
 default.solr.newrelic.app_name = 'NewRelic application'
 default.solr.newrelic.jar = '/opt/solr/newrelic/newrelic.jar'
+
+default.solr.enable_jmx = true

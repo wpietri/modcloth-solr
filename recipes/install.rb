@@ -80,5 +80,3 @@ directory '/var/log/solr' do
   mode '0755'
   not_if { File.directory?('/var/log/solr') }
 end
-
-

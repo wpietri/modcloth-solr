@@ -87,4 +87,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       'recipe[modcloth-solr::default]'
     ]
   end
+config.ssh.forward_x11 = true
 end
+
+
