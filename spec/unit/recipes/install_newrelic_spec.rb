@@ -20,6 +20,5 @@ describe 'modcloth-solr::install_newrelic' do
     it 'renders /opt/solr/newrelic/newrelic.yml template' do
       expect(chef_run).to render_file('/opt/solr/newrelic/newrelic.yml')
     end
-
   end
 end

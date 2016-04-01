@@ -40,15 +40,14 @@ end
 ### the master or replica recipe is run and it should pass either
 ### way.   But I don't see an easy way to pass a property to serverspec
 ### and serverspec has no easy access to the run_list.
-if File.exist?('/opt/solr/master')
-  solrbase = '/opt/solr/master/'
-else
-  solrbase = '/opt/solr/replica'
-end
+
+solrbase = if File.exist?('/opt/solr/master')
+             '/opt/solr/master'
+           else
+             '/opt/solr/replica'
+           end
 
 describe file("#{solrbase}/solr/conf/solrconfig.xml") do
   it { should exist }
-  its(:content) { should match /^\s+<jmx serviceUrl="service:jmx:rmi:\/\/\/jndi\/rmi:\/\/localhost:9999\/solr"\/>/}
+  its(:content) { should match %r{^\s+<jmx serviceUrl="service:jmx:rmi:///jndi/rmi://localhost:9999/solr"/>} }
 end
-
-

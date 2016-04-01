@@ -1,6 +1,5 @@
 require 'spec_helper.rb'
 describe 'modcloth-solr::default' do
-
   before do
     stub_command('id -u ecomm').and_return('111')
   end
@@ -18,6 +17,5 @@ describe 'modcloth-solr::default' do
     it 'runs the master recipe' do
       expect(chef_run).to include_recipe('modcloth-solr::master')
     end
-
   end
 end

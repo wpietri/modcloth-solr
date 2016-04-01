@@ -1,6 +1,5 @@
 require 'spec_helper.rb'
 describe 'modcloth-solr::replica' do
-
   before do
     stub_command('id -u ecomm').and_return('111')
   end
@@ -42,7 +41,5 @@ describe 'modcloth-solr::replica' do
     it 'Renders template jetty.xml' do
       expect(chef_run).to render_file('/opt/solr-3.6.0/replica/etc/jetty.xml')
     end
-
   end
-
 end

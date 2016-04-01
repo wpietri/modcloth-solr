@@ -1,7 +1,6 @@
 require 'spec_helper.rb'
 
 describe 'modcloth-solr::master' do
-
   before do
     stub_command('id -u ecomm').and_return('111')
   end
@@ -36,7 +35,5 @@ describe 'modcloth-solr::master' do
     it 'Enables the solr-master service' do
       expect(chef_run).to enable_service('solr-master')
     end
-
   end
-
 end

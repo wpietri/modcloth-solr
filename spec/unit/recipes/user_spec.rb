@@ -10,5 +10,4 @@ describe 'modcloth-solr::user' do
       expect(chef_run).to create_user('solr')
     end
   end
-
 end
