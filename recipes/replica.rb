@@ -39,23 +39,21 @@ template log_configuration do
   source 'solr-replica-log.conf.erb'
   owner 'solr'
   mode '0700'
-  not_if { File.exists?("#{node.solr.replica.home}/log.conf") }
+  not_if { File.exist?("#{node.solr.replica.home}/log.conf") }
 end
 
 template "#{node.solr.replica.home}/solr/conf/solrconfig.xml" do
   owner 'solr'
   mode '0600'
-  variables({
-    :role => 'replica',
-    :config => node.solr
-  })
+  variables(
+    role: 'replica',
+    config: node.solr)
 end
 
-if node.solr.uses_sunspot
-  template "#{node.solr.replica.home}/solr/conf/schema.xml" do
-    owner 'solr'
-    mode '0600'
-  end
+template "#{node.solr.replica.home}/solr/conf/schema.xml" do
+  owner 'solr'
+  mode '0600'
+  only_if { node.solr.uses_sunspot }
 end
 
 # create/import smf manifest
@@ -71,6 +69,11 @@ smf 'solr-replica' do
   cmd << "-javaagent:#{node.solr.newrelic.jar}" unless node.solr.newrelic.api_key.to_s.empty?
   cmd << "-Dnewrelic.environment=#{node.application.environment}" unless node.solr.newrelic.api_key.to_s.empty?
 
+  if node.solr.enable_jmx
+    # Add the command-line flag for starting JMX.
+    cmd << '-Dcom.sun.management.jmxremote'
+  end
+
   cmd << '-jar start.jar &'
   start_command cmd.join(' ')
   start_timeout 300
@@ -80,15 +83,42 @@ end
 
 solr_replica = rbac 'solr-replica'
 node.solr.users.each do |user|
-  if user != 'solr' && user != 'root'
-    ruby_block "Allow user #{user} to manage solr replica" do
+  next if user == 'solr' || user == 'root'
+  ruby_block "Allow user #{user} to manage solr replica" do
+    block do
+      Chef::Resource::Rbac.permissions[user] ||= []
+      Chef::Resource::Rbac.permissions[user] << 'solr-replica'
+      notifies :apply, solr_replica
+    end
+    only_if "id -u #{user}"
+  end
+end
+
+if node.solr.enable_jmx
+  smf 'rmiregistry' do
+    credentials_user 'solr'
+    start_command 'rmiregistry 9999 &'
+    start_timeout 300
+    environment 'PATH' => node.solr.smf_path
+    working_directory node.solr.master.home
+  end
+
+  rmiregistry = rbac 'rmiregistry'
+  node.solr.users.each do |user|
+    next if user == 'solr' || user == 'root'
+    ruby_block "Allow user #{user} to manage rmiregistry" do
       block do
         Chef::Resource::Rbac.permissions[user] ||= []
-        Chef::Resource::Rbac.permissions[user] << 'solr-replica'
-        notifies :apply, solr_replica
+        Chef::Resource::Rbac.permissions[user] << 'rmiregistry'
+        notifies :apply, rmiregistry
       end
       only_if "id -u #{user}"
     end
+  end
+
+  # start rmiregistry service
+  service 'rmiregistry' do
+    action :enable
   end
 end
 

@@ -11,8 +11,8 @@ default.solr.smf_path = '/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin'
 default.solr.uses_sunspot = true
 
 default.solr.auto_commit = {
-  :max_docs => nil,
-  :max_time => nil
+  max_docs: nil,
+  max_time: nil
 }
 
 default.solr.users = ['ecomm']

@@ -37,24 +37,22 @@ template log_configuration do
   source 'solr-master-log.conf.erb'
   owner 'solr'
   mode '0700'
-  not_if { File.exists?("#{node.solr.master.home}/log.conf") }
+  not_if { File.exist?("#{node.solr.master.home}/log.conf") }
 end
 
 template "#{node.solr.master.home}/solr/conf/solrconfig.xml" do
   owner 'solr'
   mode '0600'
-  variables({
-    :role => 'master',
-    :config => node.solr,
-    :auto_commit => auto_commit_enabled
-  })
+  variables(
+    role: 'master',
+    config: node.solr,
+    auto_commit: auto_commit_enabled)
 end
 
-if node.solr.uses_sunspot
-  template "#{node.solr.master.home}/solr/conf/schema.xml" do
-    owner 'solr'
-    mode '0600'
-  end
+template "#{node.solr.master.home}/solr/conf/schema.xml" do
+  owner 'solr'
+  mode '0600'
+  only_if { node.solr.uses_sunspot }
 end
 
 # create/import smf manifest
@@ -83,22 +81,21 @@ end
 
 solr_master = rbac 'solr-master'
 node.solr.users.each do |user|
-  if user != 'solr' && user != 'root'
-    ruby_block "Allow user #{user} to manage solr master" do
-      block do
-        Chef::Resource::Rbac.permissions[user] ||= []
-        Chef::Resource::Rbac.permissions[user] << 'solr-master'
-        notifies :apply, solr_master
-      end
-      only_if "id -u #{user}"
+  next if user == 'solr' || user == 'root'
+  ruby_block "Allow user #{user} to manage solr master" do
+    block do
+      Chef::Resource::Rbac.permissions[user] ||= []
+      Chef::Resource::Rbac.permissions[user] << 'solr-master'
+      notifies :apply, solr_master
     end
+    only_if "id -u #{user}"
   end
 end
 
 if node.solr.enable_jmx
   smf 'rmiregistry' do
     credentials_user 'solr'
-    start_command  'rmiregistry 9999 &'
+    start_command 'rmiregistry 9999 &'
     start_timeout 300
     environment 'PATH' => node.solr.smf_path
     working_directory node.solr.master.home
@@ -106,15 +103,14 @@ if node.solr.enable_jmx
 
   rmiregistry = rbac 'rmiregistry'
   node.solr.users.each do |user|
-    if user != 'solr' && user != 'root'
-      ruby_block "Allow user #{user} to manage rmiregistry" do
-        block do
-          Chef::Resource::Rbac.permissions[user] ||= []
-          Chef::Resource::Rbac.permissions[user] << 'rmiregistry'
-          notifies :apply, rmiregistry
-        end
-        only_if "id -u #{user}"
+    next if user == 'solr' || user == 'root'
+    ruby_block "Allow user #{user} to manage rmiregistry" do
+      block do
+        Chef::Resource::Rbac.permissions[user] ||= []
+        Chef::Resource::Rbac.permissions[user] << 'rmiregistry'
+        notifies :apply, rmiregistry
       end
+      only_if "id -u #{user}"
     end
   end
 
@@ -128,4 +124,3 @@ end
 service 'solr-master' do
   action :enable
 end
-

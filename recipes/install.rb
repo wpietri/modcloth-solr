@@ -24,16 +24,15 @@ package_sha1_checksum = {
   '3.6.0' => '558cdf145ab3bf22fb5d168d3f657df796bda639'
 }.fetch(node.solr.version)
 
-
 remote_file "#{Chef::Config[:file_cache_path]}/apache-solr-#{node.solr.version}.tgz" do
   source "http://tarballs.modcloth.s3.amazonaws.com/apache-solr-#{node.solr.version}.tgz"
-	mode '0744'
-	# checksum package_sha1_checksum XXX this does not appear to work.  perhaps it's trieuvan.com's fault?
+  mode '0744'
+  # checksum package_sha1_checksum XXX this does not appear to work.  perhaps it's trieuvan.com's fault?
   not_if { File.directory?("#{Chef::Config[:file_cache_path]}/apache-solr-#{node.solr.version}") }
 end
 
 execute 'checksum solr tar file' do
-  command %Q([[ "$(openssl sha1 #{Chef::Config[:file_cache_path]}/apache-solr-#{node.solr.version}.tgz)" =~ "#{package_sha1_checksum}" ]])
+  command %([[ "$(openssl sha1 #{Chef::Config[:file_cache_path]}/apache-solr-#{node.solr.version}.tgz)" =~ "#{package_sha1_checksum}" ]])
   not_if { File.directory?("#{Chef::Config[:file_cache_path]}/apache-solr-#{node.solr.version}") }
 end
 
@@ -55,14 +54,14 @@ ruby_block 'copy example solr home directory' do
   block do
     ::FileUtils.cp_r "#{Chef::Config[:file_cache_path]}/apache-solr-#{node.solr.version}/example", "/opt/solr-#{node.solr.version}/home_example"
   end
-  not_if { File.exists?("/opt/solr-#{node.solr.version}/home_example") }
+  not_if { File.exist?("/opt/solr-#{node.solr.version}/home_example") }
 end
 
 ruby_block 'create empty data directory' do
   block do
     ::FileUtils.mkdir_p "/opt/solr-#{node.solr.version}/home_example/solr/data"
   end
-  not_if { File.exists?("/opt/solr-#{node.solr.version}/home_example/solr/data") }
+  not_if { File.exist?("/opt/solr-#{node.solr.version}/home_example/solr/data") }
 end
 
 execute 'chown solr directory' do

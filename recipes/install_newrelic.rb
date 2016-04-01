@@ -8,11 +8,11 @@ else
     mode 0755
   end
 
-	remote_file node.solr.newrelic.jar do
-		source 'http://modcloth-chef.s3.amazonaws.com/newrelic/java_agent/newrelic.jar'
-		mode '0744'
-		not_if { File.file?(node.solr.newrelic.jar) }
-	end
+  remote_file node.solr.newrelic.jar do
+    source 'http://modcloth-chef.s3.amazonaws.com/newrelic/java_agent/newrelic.jar'
+    mode '0744'
+    not_if { File.file?(node.solr.newrelic.jar) }
+  end
 
   log("node.solr.newrelic -> #{node.solr.newrelic.inspect}") { level :info }
 
@@ -20,6 +20,6 @@ else
     source 'newrelic.yml.erb'
     owner user
     mode 0644
-    variables(:newrelic => node.solr.newrelic)
+    variables(newrelic: node.solr.newrelic)
   end
 end

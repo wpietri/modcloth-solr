@@ -16,11 +16,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-username = 'solr'
-
 user 'solr' do
   comment 'solr'
   home '/opt/solr'
   shell '/bin/bash'
-  supports :manage_home => false
+  supports manage_home: false
 end
