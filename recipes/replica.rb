@@ -100,7 +100,7 @@ if node.solr.enable_jmx
     start_command 'rmiregistry 9999 &'
     start_timeout 300
     environment 'PATH' => node.solr.smf_path
-    working_directory node.solr.master.home
+    working_directory node.solr.replica.home
   end
 
   rmiregistry = rbac 'rmiregistry'

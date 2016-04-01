@@ -25,3 +25,6 @@ suites:
       - recipe[java::default]
       - recipe[modcloth-solr::default]
     attributes:
+      solr:
+        newrelic:
+          api_key: keykeykey
