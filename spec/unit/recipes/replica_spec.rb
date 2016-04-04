@@ -34,10 +34,6 @@ describe 'modcloth-solr::replica' do
 
     ### SMF and RBAC tests here?
 
-    it 'Enables the rmiregistry service' do
-      expect(chef_run).to enable_service('rmiregistry')
-    end
-
     it 'Renders template jetty.xml' do
       expect(chef_run).to render_file('/opt/solr-3.6.0/replica/etc/jetty.xml')
     end

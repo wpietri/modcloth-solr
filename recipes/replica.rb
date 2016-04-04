@@ -94,34 +94,6 @@ node.solr.users.each do |user|
   end
 end
 
-if node.solr.enable_jmx
-  smf 'rmiregistry' do
-    credentials_user 'solr'
-    start_command 'rmiregistry 9999 &'
-    start_timeout 300
-    environment 'PATH' => node.solr.smf_path
-    working_directory node.solr.replica.home
-  end
-
-  rmiregistry = rbac 'rmiregistry'
-  node.solr.users.each do |user|
-    next if user == 'solr' || user == 'root'
-    ruby_block "Allow user #{user} to manage rmiregistry" do
-      block do
-        Chef::Resource::Rbac.permissions[user] ||= []
-        Chef::Resource::Rbac.permissions[user] << 'rmiregistry'
-        notifies :apply, rmiregistry
-      end
-      only_if "id -u #{user}"
-    end
-  end
-
-  # start rmiregistry service
-  service 'rmiregistry' do
-    action :enable
-  end
-end
-
 # start solr service
 # service 'solr-replica' do
 #  action :enable
