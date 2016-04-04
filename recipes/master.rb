@@ -1,8 +1,8 @@
 #
-# Cookbook Name:: solr
+# Cookbook Name:: modcloth-solr
 # Recipe:: master
 #
-# Copyright 2010, ModCloth, Inc.
+# Copyright 2010-2016, ModCloth, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,50 +16,48 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-include_recipe "solr::user"
-include_recipe "solr::install"
-include_recipe "solr::install_newrelic"
-include_recipe "smf::default"
+include_recipe 'modcloth-solr::user'
+include_recipe 'modcloth-solr::install'
+include_recipe 'modcloth-solr::install_newrelic'
+include_recipe 'smf::default'
 
 auto_commit_enabled = node.solr.auto_commit.max_docs && node.solr.auto_commit.max_time
 
 # configure solr
-ruby_block "copy example solr home into master" do
+ruby_block 'copy example solr home into master' do
   block do
-    ::FileUtils.cp_r "/opt/solr/home_example", node.solr.master.home
-    ::FileUtils.chown_R "solr", "root", node.solr.master.home
+    ::FileUtils.cp_r '/opt/solr/home_example', node.solr.master.home
+    ::FileUtils.chown_R 'solr', 'root', node.solr.master.home
   end
   not_if { File.directory?(node.solr.master.home) }
 end
 
 log_configuration = "#{node.solr.master.home}/log.conf"
 template log_configuration do
-  source "solr-master-log.conf.erb"
-  owner "solr"
-  mode "0700"
-  not_if { File.exists?("#{node.solr.master.home}/log.conf") }
+  source 'solr-master-log.conf.erb'
+  owner 'solr'
+  mode '0700'
+  not_if { File.exist?("#{node.solr.master.home}/log.conf") }
 end
 
 template "#{node.solr.master.home}/solr/conf/solrconfig.xml" do
-  owner "solr"
-  mode "0600"
-  variables({
-    :role => "master",
-    :config => node.solr,
-    :auto_commit => auto_commit_enabled
-  })
+  owner 'solr'
+  mode '0600'
+  variables(
+    role: 'master',
+    config: node.solr,
+    auto_commit: auto_commit_enabled)
 end
 
-if node.solr.uses_sunspot
-  template "#{node.solr.master.home}/solr/conf/schema.xml" do
-    owner "solr"
-    mode "0600"
-  end
+template "#{node.solr.master.home}/solr/conf/schema.xml" do
+  owner 'solr'
+  mode '0600'
+  only_if { node.solr.uses_sunspot }
 end
 
 # create/import smf manifest
-smf "solr-master" do
-  credentials_user "solr"
+smf 'solr-master' do
+  credentials_user 'solr'
   cmd = []
   cmd << "nohup java -Djetty.port=#{node.solr.master.port}"
   cmd << "-Djava.util.logging.config.file=#{log_configuration}"
@@ -67,30 +65,34 @@ smf "solr-master" do
 
   # Add NewRelic to start command if an API key is present
   cmd << "-javaagent:#{node.solr.newrelic.jar}" unless node.solr.newrelic.api_key.to_s.empty?
-  cmd << "-Dnewrelic.environment=#{node.rails_env}" unless node.solr.newrelic.api_key.to_s.empty?
+  cmd << "-Dnewrelic.environment=#{node.application.environment}" unless node.solr.newrelic.api_key.to_s.empty?
 
-  cmd << "-jar start.jar &"
+  if node.solr.enable_jmx
+    # Add the command-line flag for starting JMX.
+    cmd << '-Dcom.sun.management.jmxremote'
+  end
+
+  cmd << '-jar start.jar &'
   start_command cmd.join(' ')
   start_timeout 300
-  environment "PATH" => node.solr.smf_path
+  environment 'PATH' => node.solr.smf_path
   working_directory node.solr.master.home
 end
 
-solr_master = rbac "solr-master"
+solr_master = rbac 'solr-master'
 node.solr.users.each do |user|
-  if user != "solr" && user != "root"
-    ruby_block "Allow user #{user} to manage solr master" do
-      block do
-        Chef::Resource::Rbac.permissions[user] ||= []
-        Chef::Resource::Rbac.permissions[user] << "solr-master"
-        notifies :apply, solr_master
-      end
-      only_if "id -u #{user}"
+  next if user == 'solr' || user == 'root'
+  ruby_block "Allow user #{user} to manage solr master" do
+    block do
+      Chef::Resource::Rbac.permissions[user] ||= []
+      Chef::Resource::Rbac.permissions[user] << 'solr-master'
+      notifies :apply, solr_master
     end
+    only_if "id -u #{user}"
   end
 end
 
 # start solr service
-service "solr-master" do
+service 'solr-master' do
   action :enable
 end

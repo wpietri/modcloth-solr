@@ -1,0 +1,30 @@
+---
+driver:
+  name: vagrant
+
+driver_config:
+  require_chef_omnibus: false
+
+provisioner:
+  name: chef_zero
+  chef_client_path: /opt/local/bin/chef-client
+
+platforms:
+  - name: smartos-13.4.0
+    driver_config:
+      box: livinginthepast/smartos-base64-13.4.0
+      vagrantfile_erb: test/templates/Vagrantfile.smartos.erb
+      provision: true
+      network:
+       - ["forwarded_port", {guest: 3000, host: 3000}]
+       - ["forwarded_port", {guest: 9985, host: 9985}]
+
+suites:
+  - name: default
+    run_list: 
+      - recipe[java::default]
+      - recipe[modcloth-solr::default]
+    attributes:
+      solr:
+        newrelic:
+          api_key: keykeykey

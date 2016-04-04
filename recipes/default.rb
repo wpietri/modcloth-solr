@@ -1,8 +1,8 @@
 #
-# Cookbook Name:: solr
+# Cookbook Name:: modcloth-solr
 # Recipe:: default
 #
-# Copyright 2010, ModCloth, Inc.
+# Copyright 2010-2016, ModCloth, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,4 +17,4 @@
 # limitations under the License.
 #
 
-include_recipe "solr::master"
+include_recipe 'modcloth-solr::master'

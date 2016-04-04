@@ -1,4 +1,4 @@
-default.rails_env = 'demo'
+default.application.environment = 'demo'
 
 default.solr.version = '3.6.0'
 default.solr.java_dir = '/usr/java/default'
@@ -11,11 +11,11 @@ default.solr.smf_path = '/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin'
 default.solr.uses_sunspot = true
 
 default.solr.auto_commit = {
-  :max_docs => nil,
-  :max_time => nil
+  max_docs: nil,
+  max_time: nil
 }
 
-default.solr.users = []
+default.solr.users = ['ecomm']
 default.solr.master.hostname = 'localhost'
 default.solr.master.port = 9985
 default.solr.master.home = '/opt/solr/master'
@@ -27,4 +27,6 @@ default.solr.newrelic = {}
 default.solr.newrelic.api_key = ''
 default.solr.newrelic.apdex_t = '0.02'
 default.solr.newrelic.app_name = 'NewRelic application'
-default.solr.newrelic.jar = "/opt/solr/newrelic/newrelic.jar"
+default.solr.newrelic.jar = '/opt/solr/newrelic/newrelic.jar'
+
+default.solr.enable_jmx = true

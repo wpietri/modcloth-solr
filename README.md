@@ -15,7 +15,7 @@ This cookbook currently only works on SmartOS.
 ### Solr Master
 
 ```
-include_recipe "solr::master"
+include_recipe "modcloth-solr::master"
 ```
 
 This will create a service in SMF named `solr-master` on port 9985.
@@ -23,7 +23,7 @@ This will create a service in SMF named `solr-master` on port 9985.
 ### Solr Replica
 
 ```
-include_recipe "solr::replica"
+include_recipe "modcloth-solr::replica"
 ```
 
 This will create a service in SMF named `solr-replica` on port 8983. By default it will look for

@@ -16,51 +16,49 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-include_recipe "solr::user"
-include_recipe "solr::install"
-include_recipe "solr::install_newrelic"
-include_recipe "smf::default"
+include_recipe 'modcloth-solr::user'
+include_recipe 'modcloth-solr::install'
+include_recipe 'modcloth-solr::install_newrelic'
+include_recipe 'smf::default'
 
 # configure solr
-ruby_block "copy example solr home into replica" do
+ruby_block 'copy example solr home into replica' do
   block do
-    ::FileUtils.cp_r "/opt/solr/home_example", node.solr.replica.home
-    ::FileUtils.chown_R "solr", "root", node.solr.replica.home
+    ::FileUtils.cp_r '/opt/solr/home_example', node.solr.replica.home
+    ::FileUtils.chown_R 'solr', 'root', node.solr.replica.home
   end
   not_if { File.directory?(node.solr.replica.home) }
 end
 
-execute "chown solr replica directory" do
-  command "chown -R solr /opt/solr/replica"
+execute 'chown solr replica directory' do
+  command 'chown -R solr /opt/solr/replica'
 end
 
 log_configuration = "#{node.solr.replica.home}/log.conf"
 template log_configuration do
-  source "solr-replica-log.conf.erb"
-  owner "solr"
-  mode "0700"
-  not_if { File.exists?("#{node.solr.replica.home}/log.conf") }
+  source 'solr-replica-log.conf.erb'
+  owner 'solr'
+  mode '0700'
+  not_if { File.exist?("#{node.solr.replica.home}/log.conf") }
 end
 
 template "#{node.solr.replica.home}/solr/conf/solrconfig.xml" do
-  owner "solr"
-  mode "0600"
-  variables({
-    :role => "replica",
-    :config => node.solr
-  })
+  owner 'solr'
+  mode '0600'
+  variables(
+    role: 'replica',
+    config: node.solr)
 end
 
-if node.solr.uses_sunspot
-  template "#{node.solr.replica.home}/solr/conf/schema.xml" do
-    owner "solr"
-    mode "0600"
-  end
+template "#{node.solr.replica.home}/solr/conf/schema.xml" do
+  owner 'solr'
+  mode '0600'
+  only_if { node.solr.uses_sunspot }
 end
 
 # create/import smf manifest
-smf "solr-replica" do
-  credentials_user "solr"
+smf 'solr-replica' do
+  credentials_user 'solr'
   cmd = []
   cmd << "nohup java -Djetty.port=#{node.solr.replica.port}"
   cmd << "-Djava.util.logging.config.file=#{log_configuration}"
@@ -69,37 +67,40 @@ smf "solr-replica" do
 
   # Add NewRelic to start command if an API key is present
   cmd << "-javaagent:#{node.solr.newrelic.jar}" unless node.solr.newrelic.api_key.to_s.empty?
-  cmd << "-Dnewrelic.environment=#{node.rails_env}" unless node.solr.newrelic.api_key.to_s.empty?
+  cmd << "-Dnewrelic.environment=#{node.application.environment}" unless node.solr.newrelic.api_key.to_s.empty?
 
-  cmd << "-jar start.jar &"
+  if node.solr.enable_jmx
+    # Add the command-line flag for starting JMX.
+    cmd << '-Dcom.sun.management.jmxremote'
+  end
+
+  cmd << '-jar start.jar &'
   start_command cmd.join(' ')
   start_timeout 300
-  environment "PATH" => node.solr.smf_path
+  environment 'PATH' => node.solr.smf_path
   working_directory node.solr.replica.home
 end
 
-solr_replica = rbac "solr-replica"
+solr_replica = rbac 'solr-replica'
 node.solr.users.each do |user|
-  if user != "solr" && user != "root"
-    ruby_block "Allow user #{user} to manage solr replica" do
-      block do
-        Chef::Resource::Rbac.permissions[user] ||= []
-        Chef::Resource::Rbac.permissions[user] << "solr-replica"
-        notifies :apply, solr_replica
-      end
-      only_if "id -u #{user}"
+  next if user == 'solr' || user == 'root'
+  ruby_block "Allow user #{user} to manage solr replica" do
+    block do
+      Chef::Resource::Rbac.permissions[user] ||= []
+      Chef::Resource::Rbac.permissions[user] << 'solr-replica'
+      notifies :apply, solr_replica
     end
+    only_if "id -u #{user}"
   end
 end
 
 # start solr service
-service "solr-replica" do
-  action :enable
-end
+# service 'solr-replica' do
+#  action :enable
+# end
 
-template "/opt/solr-3.6.0/replica/etc/jetty.xml" do 
-  source "jetty.xml.erb"
+template "/opt/solr-#{node.solr.version}/replica/etc/jetty.xml" do
+  source 'jetty.xml.erb'
   owner user
-  mode "0755"
-end 
-
+  mode '0755'
+end
