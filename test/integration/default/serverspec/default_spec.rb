@@ -1,10 +1,5 @@
 require 'spec_helper'
 
-describe service('rmiregistry') do
-  it { should be_enabled }
-  it { should be_running }
-end
-
 describe file('/opt/solr-3.6.0') do
   it { should be_directory }
 end
@@ -49,5 +44,4 @@ solrbase = if File.exist?('/opt/solr/master')
 
 describe file("#{solrbase}/solr/conf/solrconfig.xml") do
   it { should exist }
-  its(:content) { should match %r{^\s+<jmx serviceUrl="service:jmx:rmi:///jndi/rmi://localhost:9999/solr"/>} }
 end

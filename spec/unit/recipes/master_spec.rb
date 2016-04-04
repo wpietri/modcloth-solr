@@ -28,10 +28,6 @@ describe 'modcloth-solr::master' do
     ### Also not sure how to mock this up so that it tests for both possibilites.
     ### I want to run this as the default (true) and then also as false.
 
-    it 'Enables the rmiregistry service' do
-      expect(chef_run).to enable_service('rmiregistry')
-    end
-
     it 'Enables the solr-master service' do
       expect(chef_run).to enable_service('solr-master')
     end
