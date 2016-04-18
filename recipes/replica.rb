@@ -87,10 +87,10 @@ end
 
 node.solr.users.each do |sysuser|
   next if sysuser == 'solr' || sysuser == 'root'
-    rbac_auth "Allow user #{sysuser} to manage solr-replica" do
-      user sysuser
-      auth 'solr-replica'
-      only_if "id -u #{sysuser}"
+  rbac_auth "Allow user #{sysuser} to manage solr-replica" do
+    user sysuser
+    auth 'solr-replica'
+    only_if "id -u #{sysuser}"
   end
 end
 

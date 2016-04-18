@@ -84,7 +84,6 @@ smf 'solr-master' do
   notifies :restart, 'service[solr-master]'
 end
 
-#solr_master = rbac 'solr-master'
 node.solr.users.each do |sysuser|
   next if sysuser == 'solr' || sysuser == 'root'
   rbac_auth "Allow user #{sysuser} to manage solr master" do
@@ -92,7 +91,6 @@ node.solr.users.each do |sysuser|
     auth 'solr-master'
     only_if "id -u #{sysuser}"
   end
-
 end
 
 # start solr service
