@@ -9,7 +9,8 @@ c.vm.communicator = 'smartos'
 c.global_zone.platform_image = 'latest'
 c.zone.name = 'base64'
 c.zone.brand = 'joyent'
-c.zone.image = 'd34c301e-10c3-11e4-9b79-5f67ca448df0'
+#c.zone.image = 'd34c301e-10c3-11e4-9b79-5f67ca448df0'
+c.zone.image = '088b97b0-e1a1-11e5-b895-9baa2086eb33'
 c.zone.memory = 3536
 c.zone.disk_size = 5
 
@@ -57,6 +58,7 @@ c.vm.provider :<%= config[:provider] %> do |p|
 <% end %>
 end
 c.vm.provision "shell", inline: <<-SHELL
+    sudo sed -i -e '/VERIFIED_INSTALL/d' /opt/local/etc/pkg_install.conf
     sudo pkg_add http://us-east.manta.joyent.com/illumos/public/chef/pkgin/chef-12.8.1.tgz
     sudo ln -s /opt/chef/bin/chef-apply /opt/local/bin/chef-apply
     sudo ln -s /opt/chef/bin/chef-client /opt/local/bin/chef-client
@@ -64,6 +66,8 @@ c.vm.provision "shell", inline: <<-SHELL
     sudo ln -s /opt/chef/bin/chef-solo /opt/local/bin/chef-solo
     sudo ln -s /opt/chef/bin/knife /opt/local/bin/knife
     sudo ln -s /opt/chef/bin/ohai /opt/local/bin/ohai
+    sudo /opt/chef/embedded/bin/gem install ipaddress 
+    sudo /opt/chef/embedded/bin/gem install ipaddr_extensions 
   SHELL
 end
 
