@@ -77,6 +77,10 @@ smf 'solr-replica' do
     cmd << '-Dcom.sun.management.jmxremote'
   end
 
+  if node.solr.java_options
+    cmd << node.solr.java_options
+  end
+
   cmd << '-jar start.jar &'
   start_command cmd.join(' ')
   start_timeout 300
