@@ -63,7 +63,8 @@ end
 smf 'solr-replica' do
   credentials_user 'solr'
   cmd = []
-  cmd << "nohup java -Djetty.port=#{node.solr.replica.port}"
+  cmd << "nohup #{node['modcloth-java']['jdk_base_path']}/#{node['modcloth-java']['jdk_version']}/bin/java"
+  cmd << "-Djetty.port=#{node.solr.replica.port}"
   cmd << "-Djava.util.logging.config.file=#{log_configuration}"
   cmd << "-Dreplication.url=http://#{node.solr.master.hostname}:#{node.solr.master.port}/solr/replication"
   cmd << "-Dsolr.data.dir=#{node.solr.replica.home}/solr/data"
@@ -84,7 +85,8 @@ smf 'solr-replica' do
   cmd << '-jar start.jar &'
   start_command cmd.join(' ')
   start_timeout 300
-  environment 'PATH' => node.solr.smf_path
+  environment 'PATH' => node.solr.smf_path,
+              'JAVA_HOME' => "#{node['modcloth-java']['jdk_base_path']}/#{node['modcloth-java']['jdk_version']}"
   working_directory node.solr.replica.home
   notifies :restart, 'service[solr-replica]'
 end
