@@ -24,8 +24,17 @@ platforms:
 suites:
   - name: default
     run_list: 
-      - recipe[java::default]
+      - recipe[modcloth-java::default]
       - recipe[modcloth-solr::replica]
+    attributes:
+      solr:
+        newrelic:
+          api_key: keykeykey
+        java_options: "-Xmx25M -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=25"
+  - name: master
+    run_list:
+      - recipe[modcloth-java::default]
+      - recipe[modcloth-solr::master]
     attributes:
       solr:
         newrelic:
