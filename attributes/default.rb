@@ -7,6 +7,8 @@ default.solr.jetty_home = '/opt/solr'
 default.solr.jetty_user = 'solr'
 default.solr.jetty_log_dir = '/opt/solr/logs'
 
+default.solr.java_options = nil
+
 default.solr.smf_path = '/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin'
 default.solr.uses_sunspot = true
 

@@ -38,6 +38,7 @@ template log_configuration do
   owner 'solr'
   mode '0700'
   not_if { File.exist?("#{node.solr.master.home}/log.conf") }
+  notifies :restart, 'service[solr-master]'
 end
 
 template "#{node.solr.master.home}/solr/conf/solrconfig.xml" do
@@ -47,12 +48,14 @@ template "#{node.solr.master.home}/solr/conf/solrconfig.xml" do
     role: 'master',
     config: node.solr,
     auto_commit: auto_commit_enabled)
+  notifies :restart, 'service[solr-master]'
 end
 
 template "#{node.solr.master.home}/solr/conf/schema.xml" do
   owner 'solr'
   mode '0600'
   only_if { node.solr.uses_sunspot }
+  notifies :restart, 'service[solr-master]'
 end
 
 # create/import smf manifest
@@ -72,23 +75,25 @@ smf 'solr-master' do
     cmd << '-Dcom.sun.management.jmxremote'
   end
 
+  if node.solr.java_options
+    cmd << node.solr.java_options
+  end
+
   cmd << '-jar start.jar &'
   start_command cmd.join(' ')
   start_timeout 300
   environment 'PATH' => node.solr.smf_path
   working_directory node.solr.master.home
+
+  notifies :restart, 'service[solr-master]'
 end
 
-solr_master = rbac 'solr-master'
-node.solr.users.each do |user|
-  next if user == 'solr' || user == 'root'
-  ruby_block "Allow user #{user} to manage solr master" do
-    block do
-      Chef::Resource::Rbac.permissions[user] ||= []
-      Chef::Resource::Rbac.permissions[user] << 'solr-master'
-      notifies :apply, solr_master
-    end
-    only_if "id -u #{user}"
+node.solr.users.each do |sysuser|
+  next if sysuser == 'solr' || sysuser == 'root'
+  rbac_auth "Allow user #{sysuser} to manage solr master" do
+    user sysuser
+    auth 'solr-master'
+    only_if "id -u #{sysuser}"
   end
 end
 

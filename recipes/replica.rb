@@ -40,6 +40,7 @@ template log_configuration do
   owner 'solr'
   mode '0700'
   not_if { File.exist?("#{node.solr.replica.home}/log.conf") }
+  notifies :restart, 'service[solr-replica]'
 end
 
 template "#{node.solr.replica.home}/solr/conf/solrconfig.xml" do
@@ -48,12 +49,14 @@ template "#{node.solr.replica.home}/solr/conf/solrconfig.xml" do
   variables(
     role: 'replica',
     config: node.solr)
+  notifies :restart, 'service[solr-replica]'
 end
 
 template "#{node.solr.replica.home}/solr/conf/schema.xml" do
   owner 'solr'
   mode '0600'
   only_if { node.solr.uses_sunspot }
+  notifies :restart, 'service[solr-replica]'
 end
 
 # create/import smf manifest
@@ -74,33 +77,35 @@ smf 'solr-replica' do
     cmd << '-Dcom.sun.management.jmxremote'
   end
 
+  if node.solr.java_options
+    cmd << node.solr.java_options
+  end
+
   cmd << '-jar start.jar &'
   start_command cmd.join(' ')
   start_timeout 300
   environment 'PATH' => node.solr.smf_path
   working_directory node.solr.replica.home
+  notifies :restart, 'service[solr-replica]'
 end
 
-solr_replica = rbac 'solr-replica'
-node.solr.users.each do |user|
-  next if user == 'solr' || user == 'root'
-  ruby_block "Allow user #{user} to manage solr replica" do
-    block do
-      Chef::Resource::Rbac.permissions[user] ||= []
-      Chef::Resource::Rbac.permissions[user] << 'solr-replica'
-      notifies :apply, solr_replica
-    end
-    only_if "id -u #{user}"
+node.solr.users.each do |sysuser|
+  next if sysuser == 'solr' || sysuser == 'root'
+  rbac_auth "Allow user #{sysuser} to manage solr-replica" do
+    user sysuser
+    auth 'solr-replica'
+    only_if "id -u #{sysuser}"
   end
 end
-
-# start solr service
-# service 'solr-replica' do
-#  action :enable
-# end
 
 template "/opt/solr-#{node.solr.version}/replica/etc/jetty.xml" do
   source 'jetty.xml.erb'
   owner user
   mode '0755'
+  notifies :restart, 'service[solr-replica]'
+end
+
+# start solr service
+service 'solr-replica' do
+  action :enable
 end
