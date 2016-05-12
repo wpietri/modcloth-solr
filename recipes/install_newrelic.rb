@@ -4,12 +4,12 @@ else
   log('solr api_key set, installation of newrelic.jar') { level :info }
 
   directory File.dirname(node.solr.newrelic.jar) do
-    owner user
+    owner node.solr.jetty_user
     mode 0755
   end
 
   remote_file node.solr.newrelic.jar do
-    source 'http://modcloth-chef.s3.amazonaws.com/newrelic/java_agent/newrelic.jar'
+    source 'http://download.newrelic.com/newrelic/java-agent/newrelic-agent/3.28.0/newrelic-agent-3.28.0.jar'
     mode '0744'
     not_if { File.file?(node.solr.newrelic.jar) }
   end
@@ -18,7 +18,7 @@ else
 
   template ::File.join(::File.dirname(node.solr.newrelic.jar), 'newrelic.yml') do
     source 'newrelic.yml.erb'
-    owner user
+    owner node.solr.jetty_user
     mode 0644
     variables(newrelic: node.solr.newrelic)
   end
