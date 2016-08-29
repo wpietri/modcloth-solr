@@ -1,82 +1,175 @@
-#
-# Cookbook Name:: modcloth-solr
-# Recipe:: install
-#
-# Copyright 2010, ModCloth, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+
+solr_mode = node['solr']['mode']
+
+
+unless solr_mode == 'master' or solr_mode == 'replica'
+  raise "must set node['solr'['mode'] to 'master' or 'replica'"
+end
 
 include_recipe 'modcloth-java'
-include_recipe 'modcloth-solr::user'
+include_recipe 'smf'
 
-user = 'solr'
-
-package_sha1_checksum = {
-  '3.6.0' => '558cdf145ab3bf22fb5d168d3f657df796bda639'
-}.fetch(node.solr.version)
-
-remote_file "#{Chef::Config[:file_cache_path]}/apache-solr-#{node.solr.version}.tgz" do
-  source "http://tarballs.modcloth.s3.amazonaws.com/apache-solr-#{node.solr.version}.tgz"
-  mode '0744'
-  # checksum package_sha1_checksum XXX this does not appear to work.  perhaps it's trieuvan.com's fault?
-  not_if { File.directory?("#{Chef::Config[:file_cache_path]}/apache-solr-#{node.solr.version}") }
-end
-
-execute 'checksum solr tar file' do
-  command %([[ "$(openssl sha1 #{Chef::Config[:file_cache_path]}/apache-solr-#{node.solr.version}.tgz)" =~ "#{package_sha1_checksum}" ]])
-  not_if { File.directory?("#{Chef::Config[:file_cache_path]}/apache-solr-#{node.solr.version}") }
-end
-
-package_file = "#{Chef::Config[:file_cache_path]}/apache-solr-#{node.solr.version}.tgz"
-
-execute 'extract solr tar file into tmp' do
-  command "cd #{Chef::Config[:file_cache_path]} && tar -xvf #{package_file}"
-  not_if { File.directory?("#{Chef::Config[:file_cache_path]}/apache-solr-#{node.solr.version}") }
-end
-
+#
 # install solr
-directory "/opt/solr-#{node.solr.version}" do
-  owner user
-  mode '0755'
-  not_if { File.directory?("/opt/solr-#{node.solr.version}") }
+#
+
+solr_install_dir = '/opt/solr'
+solr_data_dir = '/opt/solr-data'
+solr_log_dir = '/var/log/solr'
+solr_service = "solr-#{solr_mode}"
+
+user node['solr']['user'] do
+  home solr_install_dir
+  manage_home false
 end
 
-ruby_block 'copy example solr home directory' do
-  block do
-    ::FileUtils.cp_r "#{Chef::Config[:file_cache_path]}/apache-solr-#{node.solr.version}/example", "/opt/solr-#{node.solr.version}/home_example"
+ark 'solr' do
+  url "http://tarballs.modcloth.s3.amazonaws.com/apache-solr-#{node['solr']['version']}.tgz"
+  version node['solr']['version']
+  checksum node['solr']['checksum']
+  prefix_root '/opt'
+  prefix_home '/opt'
+  owner node['solr']['user']
+  action :install
+end
+
+[solr_install_dir, solr_data_dir, solr_log_dir].each do |dir|
+  directory dir do
+    owner node['solr']['user']
+    mode '0755'
   end
-  not_if { File.exist?("/opt/solr-#{node.solr.version}/home_example") }
 end
 
-ruby_block 'create empty data directory' do
-  block do
-    ::FileUtils.mkdir_p "/opt/solr-#{node.solr.version}/home_example/solr/data"
-  end
-  not_if { File.exist?("/opt/solr-#{node.solr.version}/home_example/solr/data") }
-end
-
-execute 'chown solr directory' do
-  command "chown -R #{user} /opt/solr-#{node.solr.version}"
-end
-
-link '/opt/solr' do
-  owner user
-  to "/opt/solr-#{node.solr.version}"
-  not_if { File.directory?('/opt/solr') }
-end
-
-directory '/var/log/solr' do
-  owner user
+template "#{solr_data_dir}/solr.xml" do
+  owner node['solr']['user']
   mode '0755'
-  not_if { File.directory?('/var/log/solr') }
+  notifies :restart, "service[#{solr_service}]"
+end
+
+template "#{solr_install_dir}/server/resources/log4j.properties" do
+  # owner node['solr']['user']
+  mode '0755'
+  variables log_dir: solr_log_dir
+  notifies :restart, "service[#{solr_service}]"
+end
+
+
+#
+# install newrelic
+#
+install_newrelic = (node['solr']['newrelic']['api_key'] and !node['solr']['newrelic']['api_key'].empty?)
+
+if install_newrelic
+  include_recipe 'modcloth-solr::install_newrelic'
+end
+
+
+#
+# set up core
+#
+
+core_dir = solr_data_dir + '/ecomm'
+conf_dir = core_dir + '/conf'
+core_data_dir = core_dir + '/data'
+
+[core_dir, conf_dir, core_data_dir].each do |d|
+  directory d do
+    owner node['solr']['user']
+    mode '0755'
+  end
+end
+
+file "#{core_dir}/core.properties" do
+  content <<-EOF
+    name=ecomm
+    config=solrconfig.xml
+    schema=schema.xml
+    dataDir=data
+  EOF
+  owner node['solr']['user']
+  mode '0755'
+end
+
+# TODO: these should have content or be removed
+file "#{conf_dir}/stopwords.txt" do
+  content ''
+  owner node['solr']['user']
+  mode '0755'
+end
+
+# TODO: these should have content or be removed
+file "#{conf_dir}/synonyms.txt" do
+  content ''
+  owner node['solr']['user']
+  mode '0755'
+end
+
+template "#{conf_dir}/solrconfig.xml" do
+  owner node['solr']['user']
+  mode '0755'
+  variables(auto_commit: node['solr']['autocommit'])
+  notifies :restart, "service[#{solr_service}]"
+end
+
+
+template "#{conf_dir}/schema.xml" do
+  owner node['solr']['user']
+  mode '0755'
+  notifies :restart, "service[#{solr_service}]"
+end
+
+
+#
+# set up solr service
+#
+
+smf solr_service do
+  credentials_user 'solr'
+  cmd = []
+  cmd << "nohup #{node['modcloth-java']['jdk_base_path']}/#{node['modcloth-java']['jdk_version']}/bin/java"
+  cmd << "-Djetty.port=#{node['solr'][solr_mode]['port']}"
+  cmd << "-Dsolr.install.dir=#{solr_install_dir}"
+  cmd << "-Djetty.home=#{solr_install_dir}/server"
+  cmd << "-Dsolr.solr.home=#{solr_data_dir}"
+  cmd << "-Denable.#{solr_mode}=true"
+  if solr_mode == 'replica'
+    # cmd << "-Dreplication.url=http://#{node['solr']['master']['hostname']}:#{node['solr']['master']['port']}/solr/ecomm/replication"
+    cmd << "-Dreplication.url=http://192.168.112.165:9985/solr/ecomm"
+  end
+  # JVM incantation from Solr 6.1 startup scripts
+  cmd.push(*%w{-Xms512m -Xmx512m -XX:NewRatio=3 -XX:SurvivorRatio=4 -XX:TargetSurvivorRatio=90
+          -XX:MaxTenuringThreshold=8 -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:ConcGCThreads=4
+          -XX:ParallelGCThreads=4 -XX:+CMSScavengeBeforeRemark -XX:PretenureSizeThreshold=64m
+          -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=50
+          -XX:CMSMaxAbortablePrecleanTime=6000 -XX:+CMSParallelRemarkEnabled -XX:+ParallelRefProcEnabled
+          -verbose:gc -XX:+PrintHeapAtGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps
+          -XX:+PrintTenuringDistribution -XX:+PrintGCApplicationStoppedTime -Xss256k})
+  cmd << "-Xloggc:#{solr_install_dir}/server/logs/solr_gc.log"
+  cmd << "-XX:OnOutOfMemoryError=#{solr_install_dir}/bin/oom_solr.sh"
+
+
+  # # Add NewRelic to start command if an API key is present
+  if install_newrelic
+    cmd << "-javaagent:#{node.solr.newrelic.jar}"
+    cmd << "-Dnewrelic.environment=#{node.application.environment}"
+  end
+
+  if node.solr.enable_jmx
+    cmd << '-Dcom.sun.management.jmxremote'
+  end
+
+  cmd << '-jar start.jar --module=http &'
+
+  start_command cmd.map { |x| x.strip }.join(' ')
+  start_timeout 300
+  environment 'PATH' => node.solr.smf_path,
+              'JAVA_HOME' => "#{node['modcloth-java']['jdk_base_path']}/#{node['modcloth-java']['jdk_version']}"
+  working_directory solr_install_dir + '/server'
+
+  notifies :restart, "service[#{solr_service}]"
+end
+
+# start solr service
+service solr_service do
+  action :enable
 end

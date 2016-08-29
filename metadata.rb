@@ -4,10 +4,11 @@ maintainer_email 'ops@modcloth.com'
 license          'Apache 2.0'
 description      'Installs/Configures solr'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version          '0.3.6'
+version          '0.4.0'
 
 depends 'modcloth-java'
 depends 'smf'
+depends 'ark'
 
 attribute 'solr/users',
           display_name: 'Solr users',

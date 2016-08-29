@@ -22,7 +22,7 @@ platforms:
        - ["forwarded_port", {guest: 8983, host: 8983}]
 
 suites:
-  - name: default
+  - name: replica
     run_list: 
       - recipe[modcloth-java::default]
       - recipe[modcloth-solr::replica]
@@ -30,7 +30,6 @@ suites:
       solr:
         newrelic:
           api_key: keykeykey
-        java_options: "-Xmx25M -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=25"
   - name: master
     run_list:
       - recipe[modcloth-java::default]
@@ -39,4 +38,3 @@ suites:
       solr:
         newrelic:
           api_key: keykeykey
-        java_options: "-Xmx25M -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=25"
