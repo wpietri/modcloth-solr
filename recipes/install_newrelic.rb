@@ -11,7 +11,7 @@ else
   end
 
   remote_file jar do
-    source 'http://modcloth-chef.s3.amazonaws.com/newrelic/java_agent/newrelic.jar'
+    source 'http://download.newrelic.com/newrelic/java-agent/newrelic-agent/3.28.0/newrelic-agent-3.28.0.jar'
     mode '0744'
     not_if { File.file?(jar) }
   end
@@ -20,7 +20,7 @@ else
 
   template ::File.join(::File.dirname(jar), 'newrelic.yml') do
     source 'newrelic.yml.erb'
-    owner user
+    owner node.solr.jetty_user
     mode 0644
     variables(newrelic: node['solr']['newrelic'])
   end
