@@ -14,6 +14,7 @@ default['solr']['auto_commit'] = {
   max_docs: nil,
   max_time: nil
 }
+default['solr']['core'] = 'ecomm'
 
 default['solr']['users'] = ['ecomm']
 default['solr']['master']['hostname'] = 'localhost'

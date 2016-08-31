@@ -68,7 +68,7 @@ end
 # set up core
 #
 
-core_dir = solr_data_dir + '/ecomm'
+core_dir = solr_data_dir + "/#{node['solr']['core']}"
 conf_dir = core_dir + '/conf'
 core_data_dir = core_dir + '/data'
 
@@ -81,7 +81,7 @@ end
 
 file "#{core_dir}/core.properties" do
   content <<-EOF
-    name=ecomm
+    name=#{node['solr']['core']}
     config=solrconfig.xml
     schema=schema.xml
     dataDir=data
@@ -133,8 +133,7 @@ smf solr_service do
   cmd << "-Dsolr.solr.home=#{solr_data_dir}"
   cmd << "-Denable.#{solr_mode}=true"
   if solr_mode == 'replica'
-    # cmd << "-Dreplication.url=http://#{node['solr']['master']['hostname']}:#{node['solr']['master']['port']}/solr/ecomm/replication"
-    cmd << "-Dreplication.url=http://192.168.112.165:9985/solr/ecomm"
+    cmd << "-Dreplication.url=http://#{node['solr']['master']['hostname']}:#{node['solr']['master']['port']}/solr/#{node['solr']['core']}/replication"
   end
   # JVM incantation from Solr 6.1 startup scripts
   cmd.push(*%w{-Xms512m -Xmx512m -XX:NewRatio=3 -XX:SurvivorRatio=4 -XX:TargetSurvivorRatio=90

@@ -4,7 +4,7 @@ maintainer_email 'ops@modcloth.com'
 license          'Apache 2.0'
 description      'Installs/Configures solr'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version          '0.4.0'
+version          '0.4.1'
 
 depends 'modcloth-java'
 depends 'smf'
@@ -25,6 +25,12 @@ attribute 'solr/auto_commit/max_docs',
 attribute 'solr/auto_commit/max_time',
           display_name: 'Solr Auto-commit max time',
           description: 'Maximum time (in milliseconds) before queued document writes are committed. solr/auto_commit/max_docs must also be set for this to take effect.',
+          type: 'string',
+          required: 'recommended'
+
+attribute 'solr/core',
+          display_name: 'name for main core',
+          description: 'name for Solr default core',
           type: 'string',
           required: 'recommended'
 
