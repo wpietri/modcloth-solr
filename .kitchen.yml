@@ -20,6 +20,8 @@ platforms:
        - ["forwarded_port", {guest: 3000, host: 3000}]
        - ["forwarded_port", {guest: 9985, host: 9985}]
        - ["forwarded_port", {guest: 8983, host: 8983}]
+      customize:
+        memory: 1024
 
 suites:
   - name: replica

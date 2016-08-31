@@ -133,7 +133,7 @@ smf solr_service do
   cmd << "-Dsolr.solr.home=#{solr_data_dir}"
   cmd << "-Denable.#{solr_mode}=true"
   if solr_mode == 'replica'
-    cmd << "-Dreplication.url=http://#{node['solr']['master']['hostname']}:#{node['solr']['master']['port']}/solr/#{node['solr']['core']}/replication"
+    cmd << "-Dreplication.url=http://#{node['solr']['master']['hostname']}:#{node['solr']['master']['port']}/solr/#{node['solr']['core']}"
   end
   # JVM incantation from Solr 6.1 startup scripts
   cmd.push(*%w{-Xms512m -Xmx512m -XX:NewRatio=3 -XX:SurvivorRatio=4 -XX:TargetSurvivorRatio=90

@@ -20,7 +20,7 @@ else
 
   template ::File.join(::File.dirname(jar), 'newrelic.yml') do
     source 'newrelic.yml.erb'
-    owner node.solr.jetty_user
+    owner node['solr']['user']
     mode 0644
     variables(newrelic: node['solr']['newrelic'])
   end
