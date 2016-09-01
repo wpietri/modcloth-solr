@@ -5,6 +5,7 @@ default['solr']['version'] = '6.1.0'
 default['solr']['checksum'] = '74630a06d45eb44c0afe2bfb6e2cd80c9d8d92aa0c48a563e39c32996a76c8b0'
 
 default['solr']['java_dir'] = '/usr/java/default'
+default['solr']['max_memory'] = '6144m'
 default['solr']['java_options'] = nil
 
 default['solr']['smf_path'] = '/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin'

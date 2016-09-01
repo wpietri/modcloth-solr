@@ -136,7 +136,8 @@ smf solr_service do
     cmd << "-Dreplication.url=http://#{node['solr']['master']['hostname']}:#{node['solr']['master']['port']}/solr/#{node['solr']['core']}"
   end
   # JVM incantation from Solr 6.1 startup scripts
-  cmd.push(*%w{-Xms512m -Xmx512m -XX:NewRatio=3 -XX:SurvivorRatio=4 -XX:TargetSurvivorRatio=90
+  cmd << "-Xmx#{node['solr']['max_memory']}"
+  cmd.push(*%w{-Xms512m -XX:NewRatio=3 -XX:SurvivorRatio=4 -XX:TargetSurvivorRatio=90
           -XX:MaxTenuringThreshold=8 -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:ConcGCThreads=4
           -XX:ParallelGCThreads=4 -XX:+CMSScavengeBeforeRemark -XX:PretenureSizeThreshold=64m
           -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=50

@@ -4,7 +4,7 @@ maintainer_email 'ops@modcloth.com'
 license          'Apache 2.0'
 description      'Installs/Configures solr'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version          '0.4.2'
+version          '0.4.3'
 
 depends 'modcloth-java'
 depends 'smf'
@@ -31,6 +31,12 @@ attribute 'solr/auto_commit/max_time',
 attribute 'solr/core',
           display_name: 'name for main core',
           description: 'name for Solr default core',
+          type: 'string',
+          required: 'recommended'
+
+attribute 'solr/max_memory',
+          display_name: 'maximium process memory',
+          description: 'maximum process memory in JVM Xmx format. E.g., 512m, 6g',
           type: 'string',
           required: 'recommended'
 
