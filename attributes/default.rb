@@ -25,7 +25,7 @@ default['solr']['master']['home'] = '/opt/solr/master'
 default['solr']['replica']['port'] = 8983
 default['solr']['replica']['home'] = '/opt/solr/replica'
 
-default['solr']['newrelic']['api_key'] = ''
+default['solr']['newrelic']['api_key'] = '581ac5c41c405e74d32775b4e7d24b2f8430410b'
 default['solr']['newrelic']['apdex_t'] = '0.02'
 default['solr']['newrelic']['app_name'] = 'NewRelic application'
 default['solr']['newrelic']['jar'] = '/opt/solr/newrelic/newrelic.jar'
